@@ -1,0 +1,43 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: #0d0f14; color: #e7e9ee;
+  font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+header { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: #8b90a0; margin: 0 0 12px; }
+.pill { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid #23262f; }
+.pill.ok { color: #7ee0a0; border-color: #1e3a2a; background: #10231a; }
+.pill.bad { color: #ff9a9a; border-color: #3a2020; background: #23110f; }
+.caps { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 20px; }
+.cap { font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid #23262f; }
+.cap.on { color: #9fe6b6; border-color: #21402f; }
+.cap.off { color: #5a5f6e; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+section { background: #12151c; border: 1px solid #1c2029; border-radius: 12px; padding: 18px; }
+label { display: block; font-size: 12px; color: #a7abbb; margin: 0 0 12px; }
+label small { color: #6b7080; }
+input, select, textarea {
+  width: 100%; margin-top: 4px; background: #0d0f14; color: #e7e9ee;
+  border: 1px solid #262b36; border-radius: 8px; padding: 8px 10px; font: inherit;
+}
+input[type=range] { padding: 0; }
+input[type=file] { border: none; padding: 6px 0; }
+textarea { min-height: 56px; resize: vertical; }
+button {
+  background: #2f6bff; color: #fff; border: 0; border-radius: 8px;
+  padding: 9px 14px; font: inherit; font-weight: 600; cursor: pointer;
+}
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.accept { background: #1f9d55; }
+button.reject { background: #b03636; }
+.row { display: flex; gap: 8px; }
+.row button { flex: 1; }
+.thumb { max-width: 100%; max-height: 160px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #262b36; }
+.frame { width: 100%; border-radius: 10px; border: 1px solid #262b36; background: #000; }
+.meta { font-size: 12px; color: #6b7080; margin: 8px 0; }
+.hint { color: #5a5f6e; font-size: 13px; }
+.err { color: #ff9a9a; font-size: 12px; white-space: pre-wrap; }

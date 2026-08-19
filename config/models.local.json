@@ -1,0 +1,8 @@
+{
+  "_comment": "Generated pointer to the SHARED model stores. Discovered in Phase 0, never copied. Deleting frame-motion-studio must not affect these.",
+  "comfyBase": "Z:/codex app",
+  "checkpoints": "Z:/codex app/checkpoints",
+  "loras": "Z:/codex app/lora",
+  "controlnet": "Z:/codex app/ComfyUI/models/controlnet",
+  "upscale": "Z:/codex app/upscale_models"
+}

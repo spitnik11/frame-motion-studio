@@ -1,0 +1,22 @@
+{
+  "name": "frame-motion-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local frame-by-frame character animation studio. Isolated from Z-Image Studio; shares models only.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch server/src/index.ts",
+    "start": "tsx server/src/index.ts",
+    "test": "tsx --test server/src/*.test.ts",
+    "build:web": "cd app/frontend && npm run build"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
