@@ -15,8 +15,12 @@ const wrap = (fn: express.RequestHandler): express.RequestHandler => (req, res, 
 app.get("/api/diagnostics", wrap(async (_req, res) => {
   const caps = await comfy.hasNodes(
     "OpenposePreprocessor", "DWPreprocessor", "ControlNetApplyAdvanced",
+    "DepthAnythingV2Preprocessor", "IPAdapterAdvanced",
     "RIFE VFI", "LayerMask: RemBgUltra", "VHS_VideoCombine"
   );
+  // Capability-driven UI reads this — the frontend renders controls off these flags,
+  // never off node names. identityReference is false (IPAdapter absent; identity = LoRA
+  // + prompt + seed). See docs/frontend-design.md §23 and docs/roadmap.md.
   res.json({
     studio: "ok",
     port: config.port,
@@ -24,6 +28,8 @@ app.get("/api/diagnostics", wrap(async (_req, res) => {
     capabilities: {
       pose: caps.OpenposePreprocessor || caps.DWPreprocessor,
       controlnet: caps.ControlNetApplyAdvanced,
+      depth: caps.DepthAnythingV2Preprocessor,
+      identityReference: caps.IPAdapterAdvanced,
       interpolation: caps["RIFE VFI"],
       transparent: caps["LayerMask: RemBgUltra"],
       video: caps.VHS_VideoCombine,

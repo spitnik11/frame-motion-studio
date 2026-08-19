@@ -42,12 +42,20 @@ Stored as JSON in `data/anchors/`. Source images are never modified.
 `LoadImage(pose) → OpenposePreprocessor → ControlNetLoader(openpose-sdxl) → ControlNetApplyAdvanced`
 join at `KSampler → VAEDecode → SaveImage`. Identity = LoRA + prompt + seed; pose = OpenPose control.
 
-## Capabilities present (Phase 0 verified)
-Pose (OpenPose/DWPose), SDXL OpenPose+Canny ControlNet, RIFE interpolation, RemBg transparency,
-VideoHelperSuite — all installed in the shared ComfyUI. Missing: Z-Image ControlNet, IPAdapter
-(raw reference-image identity). See `docs/environment-audit.md`.
+## Capabilities present (live via `/api/diagnostics`)
+`pose ✓ · controlnet ✓ · depth ✓ · transparent ✓ · interpolation ✓ · video ✓ ·
+identityReference ✗`. The UI renders controls off these flags, never off node names.
+`identityReference` is false: IPAdapter is not installed (PhotoMaker nodes exist but unwired), so
+identity = character LoRA + prompt + seed. Missing: Z-Image ControlNet, IPAdapter. See
+`docs/environment-audit.md`.
 
-## Not built yet (later phases)
-Pose/animation projects, timeline UI, onion-skin, alignment, motion presets, exports (PNG seq /
-sprite sheet / GIF / WebP / MP4), consistency QA + auto-repair, Z-Image/Krea backends, second
-Motion ComfyUI (:8189), driving-video, Blender, interpolation UI, video (Wan/SCAIL) mode.
+## Frontend
+Stage-first animation viewer (Procreate Dreams hierarchy), NOT a generation form and NOT ComfyUI —
+spec in `docs/frontend-design.md`. The current `app/frontend` (3-column form) is the throwaway M0
+proof UI, replaced from M1 by the shell (AppShell/TopBar/Stage/drawers/timeline/inspector).
+
+## Plan
+`docs/roadmap.md` is the unified milestone plan (34 backend phases + 8 UI phases). M0 (single frame)
+done; **M1 (the animation loop: 8-frame Idle, timeline, playback, regenerate, PNG+sprite-sheet) is
+next.** Milestones M2–M6 cover consistency/repair, more motions+sources, more backends, motion
+quality+export, agent+auto-motion.
