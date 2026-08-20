@@ -17,6 +17,9 @@ export type FrameOpts = {
   height?: number;
   controlStrength?: number; // pose lock
   transparent?: boolean; // cut out background -> RGBA PNG (finishing done in-graph, not via Studio Photo API)
+  poseIsMap?: boolean; // true = input is already an OpenPose skeleton (preset) -> skip preprocessor
+  initImageName?: string; // img2img identity keyframe: seed the latent from this frame (locks identity)
+  denoise?: number; // with initImageName, how much to change (0.5-0.6 keeps identity, moves pose)
 };
 
 export function buildPoseFrame(anchor: Anchor, o: FrameOpts): Record<string, any> {
@@ -67,10 +70,16 @@ export function buildPoseFrame(anchor: Anchor, o: FrameOpts): Record<string, any
   g["7"] = { class_type: "CLIPTextEncode", inputs: { text: anchor.negativePrompt, clip: clipRef } };
 
   g["11"] = { class_type: "LoadImage", inputs: { image: o.poseImageName } };
-  g["12"] = {
-    class_type: "OpenposePreprocessor",
-    inputs: { image: ["11", 0], detect_hand: "enable", detect_body: "enable", detect_face: "enable", resolution: 512 },
-  };
+  // Preset pose maps are already OpenPose skeletons -> feed ControlNet directly. A photo/
+  // reference pose needs the preprocessor to extract the skeleton first.
+  let controlImage: [string, number] = ["11", 0];
+  if (!o.poseIsMap) {
+    g["12"] = {
+      class_type: "OpenposePreprocessor",
+      inputs: { image: ["11", 0], detect_hand: "enable", detect_body: "enable", detect_face: "enable", resolution: 512 },
+    };
+    controlImage = ["12", 0];
+  }
   g["13"] = { class_type: "ControlNetLoader", inputs: { control_net_name: config.controlNetOpenpose } };
   g["14"] = {
     class_type: "ControlNetApplyAdvanced",
@@ -78,27 +87,37 @@ export function buildPoseFrame(anchor: Anchor, o: FrameOpts): Record<string, any
       positive: ["6", 0],
       negative: ["7", 0],
       control_net: ["13", 0],
-      image: ["12", 0],
+      image: controlImage,
       strength: control,
       start_percent: 0,
       end_percent: 1,
     },
   };
 
-  g["5"] = { class_type: "EmptyLatentImage", inputs: { width, height, batch_size: 1 } };
+  // Latent source: empty (txt2img keyframe) or the identity keyframe encoded (img2img).
+  let latentRef: [string, number] = ["5", 0];
+  let denoise = 1;
+  if (o.initImageName) {
+    g["19"] = { class_type: "LoadImage", inputs: { image: o.initImageName } };
+    g["20"] = { class_type: "VAEEncode", inputs: { pixels: ["19", 0], vae: ["4", 2] } };
+    latentRef = ["20", 0];
+    denoise = o.denoise ?? 0.55;
+  } else {
+    g["5"] = { class_type: "EmptyLatentImage", inputs: { width, height, batch_size: 1 } };
+  }
   g["3"] = {
     class_type: "KSampler",
     inputs: {
       model: modelRef,
       positive: ["14", 0],
       negative: ["14", 1],
-      latent_image: ["5", 0],
+      latent_image: latentRef,
       seed: o.seed,
       steps,
       cfg,
       sampler_name: sampler,
       scheduler,
-      denoise: 1,
+      denoise,
     },
   };
   g["8"] = { class_type: "VAEDecode", inputs: { samples: ["3", 0], vae: ["4", 2] } };

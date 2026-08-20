@@ -52,3 +52,17 @@ test("opaque by default; transparent routes SaveImage through RemBg + alpha join
   assert.deepEqual(rgba["17"].inputs.alpha, ["18", 0]); // ...and the inverted mask as alpha
   assert.deepEqual(rgba["9"].inputs.images, ["17", 0]); // SaveImage writes the RGBA result
 });
+
+test("keyframe init: empty latent for keyframe, VAEEncode img2img for the rest", () => {
+  const kf = buildPoseFrame(anchor, { poseImageName: "p.png", seed: 1 });
+  assert.equal(kf["5"].class_type, "EmptyLatentImage");
+  assert.deepEqual(kf["3"].inputs.latent_image, ["5", 0]);
+  assert.equal(kf["3"].inputs.denoise, 1);
+
+  const cont = buildPoseFrame(anchor, { poseImageName: "p.png", seed: 1, initImageName: "kf.png", denoise: 0.55 });
+  assert.equal(cont["5"], undefined); // no empty latent
+  assert.equal(cont["20"].class_type, "VAEEncode"); // init frame encoded
+  assert.deepEqual(cont["20"].inputs.pixels, ["19", 0]);
+  assert.deepEqual(cont["3"].inputs.latent_image, ["20", 0]);
+  assert.equal(cont["3"].inputs.denoise, 0.55);
+});
