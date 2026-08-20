@@ -16,6 +16,7 @@ export type FrameOpts = {
   width?: number;
   height?: number;
   controlStrength?: number; // pose lock
+  transparent?: boolean; // cut out background -> RGBA PNG (finishing done in-graph, not via Studio Photo API)
 };
 
 export function buildPoseFrame(anchor: Anchor, o: FrameOpts): Record<string, any> {
@@ -101,6 +102,22 @@ export function buildPoseFrame(anchor: Anchor, o: FrameOpts): Record<string, any
     },
   };
   g["8"] = { class_type: "VAEDecode", inputs: { samples: ["3", 0], vae: ["4", 2] } };
-  g["9"] = { class_type: "SaveImage", inputs: { images: ["8", 0], filename_prefix: "fms/frame" } };
+
+  // Transparency finishing (design doc §16): remove background in-graph and save RGBA.
+  // RemBgUltra -> (image, mask); JoinImageWithAlpha applies the mask as alpha.
+  let saveSource: [string, number] = ["8", 0];
+  if (o.transparent) {
+    g["16"] = {
+      class_type: "LayerMask: RemBgUltra",
+      inputs: { image: ["8", 0], detail_range: 8, black_point: 0.01, white_point: 0.99, process_detail: true },
+    };
+    // RemBgUltra's mask is background-white / subject-black; JoinImageWithAlpha needs the
+    // opposite, so invert it — otherwise the character (not the background) goes transparent.
+    g["18"] = { class_type: "InvertMask", inputs: { mask: ["16", 1] } };
+    g["17"] = { class_type: "JoinImageWithAlpha", inputs: { image: ["16", 0], alpha: ["18", 0] } };
+    saveSource = ["17", 0];
+  }
+
+  g["9"] = { class_type: "SaveImage", inputs: { images: saveSource, filename_prefix: "fms/frame" } };
   return g;
 }

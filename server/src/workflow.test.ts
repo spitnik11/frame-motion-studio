@@ -37,3 +37,18 @@ test("pose workflow wires controlnet between text-encode and sampler", () => {
   assert.deepEqual(g["3"].inputs.model, ["10", 0]); // model routed through character LoRA
   assert.equal(g["3"].inputs.seed, 42);
 });
+
+test("opaque by default; transparent routes SaveImage through RemBg + alpha join", () => {
+  const opaque = buildPoseFrame(anchor, { poseImageName: "p.png", seed: 1 });
+  assert.deepEqual(opaque["9"].inputs.images, ["8", 0]); // straight from VAEDecode
+  assert.equal(opaque["16"], undefined);
+
+  const rgba = buildPoseFrame(anchor, { poseImageName: "p.png", seed: 1, transparent: true });
+  assert.equal(rgba["16"].class_type, "LayerMask: RemBgUltra");
+  assert.deepEqual(rgba["16"].inputs.image, ["8", 0]); // bg removal reads the decoded frame
+  assert.deepEqual(rgba["17"].inputs.image, ["16", 0]); // join gets subject image
+  assert.equal(rgba["18"].class_type, "InvertMask"); // mask inverted (RemBg polarity)
+  assert.deepEqual(rgba["18"].inputs.mask, ["16", 1]);
+  assert.deepEqual(rgba["17"].inputs.alpha, ["18", 0]); // ...and the inverted mask as alpha
+  assert.deepEqual(rgba["9"].inputs.images, ["17", 0]); // SaveImage writes the RGBA result
+});
