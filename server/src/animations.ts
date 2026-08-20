@@ -152,8 +152,18 @@ export function setFrameStatus(projectId: string, index: number, status: "accept
   return project.frames[index];
 }
 
-/** Export accepted-or-review frames (in order) as a PNG sequence or a sprite sheet (ffmpeg). */
-export async function exportAnimation(projectId: string, format: "png-sequence" | "sprite-sheet", cols?: number) {
+/**
+ * Export the generated frames (in order). Formats:
+ *  - "png-sequence": raw RGBA frames renamed frame_000.png…
+ *  - "sprite-sheet":  uniform-grid RGBA sheet via ffmpeg (preview/quick use).
+ *  - "godot-pixel":   HARDENED pixel-art sprites + Godot 4 SpriteFrames .tres + .import.
+ *                     1-bit alpha, shared palette, feet-aligned uniform cells (motion/pixel_export.py).
+ */
+export async function exportAnimation(
+  projectId: string,
+  format: "png-sequence" | "sprite-sheet" | "godot-pixel",
+  opts: { cols?: number; cellHeight?: number } = {}
+) {
   const project = getAnimation(projectId)!;
   const usable = project.frames.filter((f) => f.image && (f.status === "accepted" || f.status === "review"));
   if (usable.length === 0) throw new Error("No generated frames to export");
@@ -167,10 +177,27 @@ export async function exportAnimation(projectId: string, format: "png-sequence" 
   if (format === "png-sequence") return { format, dir: path.relative(config.dataDir, seqDir).replace(/\\/g, "/"), frames: usable.length };
 
   const n = usable.length;
-  const c = cols ?? Math.ceil(Math.sqrt(n));
+  const c = opts.cols ?? Math.ceil(Math.sqrt(n));
   const rows = Math.ceil(n / c);
+
+  if (format === "godot-pixel") {
+    const gdir = path.join(exDir, "godot");
+    fs.rmSync(gdir, { recursive: true, force: true });
+    fs.mkdirSync(gdir, { recursive: true });
+    const script = path.join(config.root, "motion", "pixel_export.py");
+    const { stdout } = await execFileP(config.pythonPath, [
+      script, seqDir, gdir, project.animation, String(project.fps), String(opts.cellHeight ?? 128), String(c),
+    ]);
+    let verify: any = {};
+    try { verify = JSON.parse(stdout.trim().split("\n").pop() || "{}"); } catch { /* keep raw */ }
+    return {
+      format, dir: path.relative(config.dataDir, gdir).replace(/\\/g, "/"),
+      sheet: path.relative(config.dataDir, path.join(gdir, "spritesheet.png")).replace(/\\/g, "/"),
+      tres: `${project.animation}.tres`, frames: n, verify,
+    };
+  }
+
   const sheet = path.join(exDir, "spritesheet.png");
-  // tile preserves RGBA; explicit rgba pix_fmt keeps transparency in the sheet.
   await execFileP("ffmpeg", [
     "-y", "-i", path.join(seqDir, "frame_%03d.png"),
     "-filter_complex", `tile=${c}x${rows}:padding=0`,

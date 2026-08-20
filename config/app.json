@@ -2,5 +2,6 @@
   "port": 3200,
   "comfyUrl": "http://127.0.0.1:8188",
   "dataDir": "./data",
-  "controlNetOpenpose": "controlnet-openpose-sdxl-1.0.safetensors"
+  "controlNetOpenpose": "controlnet-openpose-sdxl-1.0.safetensors",
+  "pythonPath": "motion/.venv/Scripts/python.exe"
 }

@@ -16,6 +16,7 @@ export const config = {
   port: Number(process.env.PORT ?? app.port ?? 3200),
   comfyUrl: (process.env.COMFY_URL ?? app.comfyUrl ?? "http://127.0.0.1:8188").replace(/\/$/, ""),
   controlNetOpenpose: app.controlNetOpenpose as string,
+  pythonPath: path.resolve(root, process.env.FMS_PYTHON ?? app.pythonPath ?? "python"),
   dataDir: path.resolve(root, app.dataDir ?? "./data"),
   paths: {
     checkpoints: models.checkpoints as string,
