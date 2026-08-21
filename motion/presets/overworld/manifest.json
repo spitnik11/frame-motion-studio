@@ -1,0 +1,34 @@
+{
+  "id": "overworld",
+  "fps": 6,
+  "loop": true,
+  "directions": [
+    "down",
+    "up",
+    "left",
+    "right"
+  ],
+  "framesPerDir": 3,
+  "poses": {
+    "down": [
+      "pose_down_0.png",
+      "pose_down_1.png",
+      "pose_down_2.png"
+    ],
+    "up": [
+      "pose_up_0.png",
+      "pose_up_1.png",
+      "pose_up_2.png"
+    ],
+    "left": [
+      "pose_left_0.png",
+      "pose_left_1.png",
+      "pose_left_2.png"
+    ],
+    "right": [
+      "pose_right_0.png",
+      "pose_right_1.png",
+      "pose_right_2.png"
+    ]
+  }
+}

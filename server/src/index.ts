@@ -95,7 +95,7 @@ app.post("/api/animations/:id/frames/:index/generate", wrap(async (req, res) =>
 app.post("/api/animations/:id/frames/:index/accept", wrap(async (req, res) =>
   res.json(setFrameStatus(req.params.id, Number(req.params.index), "accepted"))));
 app.post("/api/animations/:id/export", wrap(async (req, res) =>
-  res.json(await exportAnimation(req.params.id, req.body?.format ?? "sprite-sheet", { cols: req.body?.cols, cellHeight: req.body?.cellHeight }))));
+  res.json(await exportAnimation(req.params.id, req.body?.format ?? "sprite-sheet", { cols: req.body?.cols, cellHeight: req.body?.cellHeight, colors: req.body?.colors }))));
 
 // Serve preset skeleton maps for UI previews.
 app.use("/presets", express.static(path.join(config.root, "motion", "presets")));

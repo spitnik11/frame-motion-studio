@@ -162,7 +162,7 @@ export function setFrameStatus(projectId: string, index: number, status: "accept
 export async function exportAnimation(
   projectId: string,
   format: "png-sequence" | "sprite-sheet" | "godot-pixel",
-  opts: { cols?: number; cellHeight?: number } = {}
+  opts: { cols?: number; cellHeight?: number; colors?: number } = {}
 ) {
   const project = getAnimation(projectId)!;
   const usable = project.frames.filter((f) => f.image && (f.status === "accepted" || f.status === "review"));
@@ -186,7 +186,8 @@ export async function exportAnimation(
     fs.mkdirSync(gdir, { recursive: true });
     const script = path.join(config.root, "motion", "pixel_export.py");
     const { stdout } = await execFileP(config.pythonPath, [
-      script, seqDir, gdir, project.animation, String(project.fps), String(opts.cellHeight ?? 128), String(c),
+      script, seqDir, gdir, project.animation, String(project.fps),
+      String(opts.cellHeight ?? 128), String(c), String(opts.colors ?? 32),
     ]);
     let verify: any = {};
     try { verify = JSON.parse(stdout.trim().split("\n").pop() || "{}"); } catch { /* keep raw */ }

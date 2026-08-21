@@ -20,6 +20,7 @@ export type FrameOpts = {
   poseIsMap?: boolean; // true = input is already an OpenPose skeleton (preset) -> skip preprocessor
   initImageName?: string; // img2img identity keyframe: seed the latent from this frame (locks identity)
   denoise?: number; // with initImageName, how much to change (0.5-0.6 keeps identity, moves pose)
+  promptSuffix?: string; // appended to basePrompt (e.g. directional "back view" for turnarounds)
 };
 
 export function buildPoseFrame(anchor: Anchor, o: FrameOpts): Record<string, any> {
@@ -66,7 +67,8 @@ export function buildPoseFrame(anchor: Anchor, o: FrameOpts): Record<string, any
     clipRef = ["15", 1];
   }
 
-  g["6"] = { class_type: "CLIPTextEncode", inputs: { text: anchor.basePrompt, clip: clipRef } };
+  const positive = anchor.basePrompt + (o.promptSuffix ? `, ${o.promptSuffix}` : "");
+  g["6"] = { class_type: "CLIPTextEncode", inputs: { text: positive, clip: clipRef } };
   g["7"] = { class_type: "CLIPTextEncode", inputs: { text: anchor.negativePrompt, clip: clipRef } };
 
   g["11"] = { class_type: "LoadImage", inputs: { image: o.poseImageName } };

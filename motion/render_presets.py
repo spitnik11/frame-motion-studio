@@ -70,13 +70,53 @@ def idle_frame(i, n):
 def render(points):
     img = Image.new("RGB", (W, H), (0, 0, 0))
     d = ImageDraw.Draw(img)
-    px = {k: (int(x * W), int(y * H)) for k, (x, y) in points.items()}
+    # points may omit keypoints (None / absent) to encode facing (back = no face, side = one side).
+    px = {k: (int(x * W), int(y * H)) for k, (x, y) in points.items() if x is not None}
     for idx, (a, b) in enumerate(LIMBS):
-        d.line([px[a], px[b]], fill=COLORS[idx % len(COLORS)], width=8)
+        if a in px and b in px:
+            d.line([px[a], px[b]], fill=COLORS[idx % len(COLORS)], width=8)
     for k, (x, y) in px.items():
         r = 5
         d.ellipse([x - r, y - r, x + r, y + r], fill=COLORS[k % len(COLORS)])
     return img
+
+
+DIRS = ["down", "up", "left", "right"]
+
+
+def facing(direction):
+    """Encode facing through OpenPose face keypoints (down=full face, up=no face/back,
+    left/right=profile with one eye+ear and a horizontally-compressed body)."""
+    b = dict(BASE)
+    if direction == "up":
+        for k in (NOSE, REYE, LEYE, REAR, LEAR):
+            b.pop(k, None)
+    elif direction in ("left", "right"):
+        for k in list(b):  # compress body to ~half width -> reads side-on
+            x, y = b[k]; b[k] = (0.5 + (x - 0.5) * 0.5, y)
+        if direction == "left":
+            b.pop(REYE, None); b.pop(REAR, None)
+            b[NOSE] = (0.485, 0.30); b[LEYE] = (0.47, 0.28); b[LEAR] = (0.515, 0.30)
+        else:
+            b.pop(LEYE, None); b.pop(LEAR, None)
+            b[NOSE] = (0.515, 0.30); b[REYE] = (0.53, 0.28); b[REAR] = (0.485, 0.30)
+    return b
+
+
+def overworld_pose(direction, i):
+    """3-frame walk per direction: i in {0:contact-A, 1:neutral, 2:contact-B}."""
+    step = (-1, 0, 1)[i]
+    amp = 0.022
+    p = facing(direction)
+    if direction in ("down", "up"):
+        for k, s in ((RANK, -1), (LANK, 1), (RKNE, -0.5), (LKNE, 0.5)):
+            if k in p:
+                p[k] = (p[k][0], p[k][1] - amp * s * step)
+    else:  # side: swing legs fore/aft in x
+        for k, s in ((RANK, 1), (LANK, -1), (RKNE, 0.5), (LKNE, -0.5)):
+            if k in p:
+                p[k] = (p[k][0] + amp * s * step, p[k][1])
+    return p
 
 
 PRESETS = {"idle": {"fps": 8, "loop": True, "frames": 8, "gen": idle_frame}}
@@ -95,6 +135,23 @@ def main():
         with open(os.path.join(out, "manifest.json"), "w") as f:
             json.dump(manifest, f, indent=2)
         print(f"{name}: {n} pose maps -> {out}")
+
+    # Overworld: directional turnaround (4 dirs x 3 walk frames), Pokemon-style.
+    ow = os.path.join(here, "presets", "overworld")
+    os.makedirs(ow, exist_ok=True)
+    per_dir = 3
+    poses = {}
+    for d in DIRS:
+        names = []
+        for i in range(per_dir):
+            fn = f"pose_{d}_{i}.png"
+            render(overworld_pose(d, i)).save(os.path.join(ow, fn))
+            names.append(fn)
+        poses[d] = names
+    json.dump({"id": "overworld", "fps": 6, "loop": True, "directions": DIRS,
+               "framesPerDir": per_dir, "poses": poses},
+              open(os.path.join(ow, "manifest.json"), "w"), indent=2)
+    print(f"overworld: {len(DIRS)}x{per_dir} directional pose maps -> {ow}")
 
 
 if __name__ == "__main__":

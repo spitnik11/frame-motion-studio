@@ -145,6 +145,9 @@ def main():
     frames_dir, out_dir, anim, fps = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
     cell_h = int(sys.argv[5]) if len(sys.argv) > 5 else 128
     cols = int(sys.argv[6]) if len(sys.argv) > 6 else 4
+    global PALETTE
+    if len(sys.argv) > 7:
+        PALETTE = int(sys.argv[7])  # 8-bit palette size (e.g. 16 for Gen-3 look)
     os.makedirs(out_dir, exist_ok=True)
     frames = load(frames_dir)
     hardened, sheet, tw, th, cols, rows, = *harden(frames, cell_h, cols),
