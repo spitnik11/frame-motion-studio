@@ -1,0 +1,12 @@
+{
+  "id": "character_mt0h7u97",
+  "name": "Aqua Witch",
+  "architecture": "illustrious",
+  "checkpoint": "pixelArtDiffusionXL_spriteShaper.safetensors",
+  "characterLora": null,
+  "styleLora": null,
+  "basePrompt": "pixel art, chibi anime girl, blue twintail hair, yellow sailor dress, cat ears, full body, standing, simple white background, sprite",
+  "negativePrompt": "blurry, extra limbs, deformed, watermark, text, realistic, 3d",
+  "identityStrength": 0.9,
+  "styleStrength": 0.75
+}

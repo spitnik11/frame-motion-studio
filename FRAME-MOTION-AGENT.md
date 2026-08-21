@@ -1,5 +1,10 @@
 # Frame Motion Studio — Agent Guide
 
+> **Full handoff / design doc: [`docs/2D-STUDIO.md`](docs/2D-STUDIO.md)** — read that first (architecture,
+> file map, API, what's left, gotchas). Asset catalog: [`docs/ASSET-CATALOG.md`](docs/ASSET-CATALOG.md).
+> This file is the short brief.
+
+
 Read this before driving Motion Studio. It is the source of truth for what exists and the rules
 you must not break. (Grows as phases land; today it covers the MVP, Phases 0–5.)
 

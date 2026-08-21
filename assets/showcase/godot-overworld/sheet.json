@@ -1,0 +1,21 @@
+{
+  "directions": [
+    "up",
+    "down",
+    "left",
+    "right"
+  ],
+  "frames": 4,
+  "cell": [
+    37,
+    48
+  ],
+  "grid": [
+    4,
+    1
+  ],
+  "fps": 6.0,
+  "colors_target": 16,
+  "colors_actual": 16,
+  "partial_alpha_px": 0
+}

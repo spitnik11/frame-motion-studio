@@ -1,0 +1,11 @@
+{
+  "anim": "idle",
+  "cell_w": 69,
+  "cell_h": 128,
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "fps": 8,
+  "anchor": "feet-center",
+  "palette": 32
+}
