@@ -80,11 +80,12 @@ animations = [{ "frames":[{"duration":1.0,"texture":SubResource("A0")}, …],
   "loop": true, "name": &"idle", "speed": 8.0 }]
 ```
 
-**Test scope (honest):** the sheet's structural invariants are machine-verified (uniform cells,
-region math tiles exactly, valid resource types, correct `load_steps`) and the `.tres`/`.import`
-conform to Godot 4's documented format. A **live Godot runtime import was not executed** — Godot is
-not installed on this machine. To close that gap (≈2 min): install Godot 4, drop the `godot/` folder
-into a project, run `godot --headless --import`, and load the scene below. See §6.
+**Test scope — VERIFIED in Godot 4.7.2 (2026-08-20, RTX 5070 / OpenGL 3.3):**
+- Headless import + resource load: `idle.tres` loads as a real `SpriteFrames` — `animations=["idle"]`,
+  `frame_count=8`, `speed=8.0`, `loop=true`, every frame an `AtlasTexture` of `(69,128)` → `RESULT: PASS`.
+- Runtime render + playback: an `AnimatedSprite2D` with the resource renders all 8 frames crisply
+  (Nearest), transparency shows clean over a magenta clear colour (no fringe), and `is_playing()`
+  advances the animation. Repro scripts + commands in `motion/godot-verify/`.
 
 ## 4. Godot 4 import recipe (do this once per project)
 
@@ -123,9 +124,9 @@ absent the other exports (png-sequence, sprite-sheet via ffmpeg) still work — 
 
 ## 6. Closing the last gap + roadmap fit
 
-- **Live Godot test (optional):** install Godot 4 (portable exe, no installer), then a headless
-  import + a one-frame render of an `AnimatedSprite2D` scene confirms runtime playback. This is the
-  design-doc's **Phase 33 (Godot preview)** — optional, never in the core generation path.
+- **Live Godot test — DONE** (Godot 4.7.2, see §3 and `motion/godot-verify/`). This satisfies the
+  design-doc's **Phase 33 (Godot preview)** as a verification harness; it stays optional and out of
+  the core generation path.
 - **Improvements:** per-direction sheets (down/side/up) for top-down games; shadow-strip pass;
   power-of-two sheet padding option; `.res` binary SpriteFrames; multi-animation sheets (idle+walk
   in one resource). All additive to `pixel_export.py`; none affect isolation.
