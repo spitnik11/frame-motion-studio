@@ -119,7 +119,42 @@ def overworld_pose(direction, i):
     return p
 
 
-PRESETS = {"idle": {"fps": 8, "loop": True, "frames": 8, "gen": idle_frame}}
+def side_walk_frame(i, _n):
+    """Six-pose right-facing walk: contact, recoil, passing, then opposite leg.
+
+    Ankles alternate fore/aft, the passing foot lifts, arms counter-swing, and contact
+    feet share one ground line. This prevents the common generated "both legs together"
+    shuffle while keeping a compact chibi silhouette.
+    """
+    p = facing("right")
+    # right ankle x/y, left ankle x/y, right knee x/y, left knee x/y, body down, arm swing
+    poses = [
+        (.620, .84, .380, .84, .555, .70, .445, .72, .000, -1.0),  # R contact
+        (.565, .84, .435, .84, .535, .76, .465, .76, .020, -0.5),  # recoil
+        (.455, .84, .555, .76, .475, .72, .535, .67, -.010, 0.0),  # L passes
+        (.380, .84, .620, .84, .445, .72, .555, .70, .000, 1.0),   # L contact
+        (.435, .84, .565, .84, .465, .76, .535, .76, .020, 0.5),   # recoil
+        (.555, .76, .455, .84, .535, .67, .475, .72, -.010, 0.0),  # R passes
+    ]
+    rx, ry, lx, ly, rkx, rky, lkx, lky, down, swing = poses[i]
+    p[RANK], p[LANK], p[RKNE], p[LKNE] = (rx, ry), (lx, ly), (rkx, rky), (lkx, lky)
+    for k in (NOSE, NECK, RSHO, RELB, RWRI, LSHO, LELB, LWRI, RHIP, LHIP,
+              REYE, REAR):
+        if k in p:
+            x, y = p[k]
+            p[k] = (x, y + down)
+    # Opposite arm swing: forward leg pairs with backward arm.
+    p[RELB] = (p[RELB][0] - .018 * swing, p[RELB][1])
+    p[RWRI] = (p[RWRI][0] - .038 * swing, p[RWRI][1])
+    p[LELB] = (p[LELB][0] + .018 * swing, p[LELB][1])
+    p[LWRI] = (p[LWRI][0] + .038 * swing, p[LWRI][1])
+    return p
+
+
+PRESETS = {
+    "idle": {"fps": 8, "loop": True, "frames": 8, "gen": idle_frame},
+    "walk_side": {"fps": 8, "loop": True, "frames": 6, "gen": side_walk_frame},
+}
 
 
 def main():

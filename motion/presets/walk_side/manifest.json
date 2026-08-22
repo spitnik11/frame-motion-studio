@@ -1,0 +1,14 @@
+{
+  "id": "walk_side",
+  "fps": 8,
+  "loop": true,
+  "frames": 6,
+  "poses": [
+    "pose_000.png",
+    "pose_001.png",
+    "pose_002.png",
+    "pose_003.png",
+    "pose_004.png",
+    "pose_005.png"
+  ]
+}
